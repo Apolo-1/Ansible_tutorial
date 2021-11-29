@@ -1,3 +1,6 @@
-172.16.2.101
-172.16.2.102
-172.16.2.201
+[web_servers]
+172.16.2.101 apache_pkg=httpd php_pkg=php
+172.16.2.102 apache_pkg=httpd php_pkg=php
+
+[db_servers]
+172.16.2.201 apache_pkg=apache2 php_pkg=libapache2-mod-php
