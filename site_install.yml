@@ -9,11 +9,11 @@
     yum:
       update_only: yes
       update_cache: yes
-    when: ansible_distribution == "Amazon Linux"
+    when: ansible_distribution == "Amazon"
 
   - name: Update Ubuntu
     tags: always
-    yum:
+    apt:
       upgrade: dist
       update_cache: yes
     when: ansible_distribution == "Ubuntu"
@@ -29,6 +29,31 @@
         - httpd
         - php
       state: latest
+    when: ansible_distribution == "Amazon"
+
+  - name: start httpd (Amazon Linux)
+    tags: apache,centos
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    when: ansible_distribution == "Amazon"
+
+  - name: change httpd.conf
+    tags: apache,centos
+    lineinfile: 
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^ServerAdmin'
+      line: ServerAdmin mail@domain.com
+    when: ansible_distribution == "Amazon"
+    register: apache_mark
+
+  - name: restart httpd (AmazonOS)
+    tags: apache,centos
+    service:
+      name: httpd
+      state: restarted
+    when: apache_mark.changed
 
   - name: copy default html file for site
     tags: apache
@@ -49,5 +74,46 @@
        name:
          - mariadb-server
        state: latest
+
+- hosts: workstation
+  become: true
+  tasks:
+
+    - name: install unzip
+      package:
+        name: unzip
+
+    - name: install terraform
+      unarchive:
+        src: https://releases.hashicorp.com/terraform/1.0.11/terraform_1.0.11_linux_amd64.zip
+        dest: /usr/local/bin
+        remote_src: yes
+        mode: 0755
+        owner: root
+        group: root
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: create luka user
+    tags: always
+    user:
+            name: luka
+            group: root
+
+  - name: add ssh key for luka
+    tags: always
+    authorized_key:
+            user: luka
+            key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFGEDUsGiAaXz8EjFgXRAXqEf/T3SxemOKAvf5jo9Y22 Ansible"
+
+  - name: add sudoers file for luka
+    tags: always
+    copy:
+            src: sudoer_luka
+            dest: /etc/sudoers.d/simone
+            owner: root
+            group: root
 
 ...       

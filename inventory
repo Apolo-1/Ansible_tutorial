@@ -4,3 +4,6 @@
 
 [db_servers]
 172.16.2.201 apache_pkg=apache2 php_pkg=libapache2-mod-php
+
+[workstation]
+172.16.2.254
